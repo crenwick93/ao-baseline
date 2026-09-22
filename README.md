@@ -147,7 +147,4 @@ Three custom credential types covering all AO integration points:
 
 ## Reference Projects
 
-For real-world examples built from these patterns:
-
-- [`ao-ticket-enrichment`](https://github.com/crenwick93/ao-ticket-enrichment) — Simple enrichment + remediation (EDA-to-AO bridge, SNOW integration, Terraform)
-- [`ao-cve-remediation-scalable`](https://github.com/crenwick93/ao-cve-remediation-scalable) — Complex fleet patching (approval bridge, CR governance, dynamic job templates)
+For real-world examples built from these patterns, see the AO demo projects in the same GitHub org.

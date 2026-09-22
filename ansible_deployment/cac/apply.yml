@@ -45,7 +45,7 @@
     git_repo_url: "{{ 'https://github.com/' ~ github_repo ~ '.git' }}"
 
     # EDA custom Decision Environment image
-    de_image: "quay.io/crenwick93/snow-de:latest"
+    de_image: "{{ lookup('env', 'DE_IMAGE') | default('YOUR_REGISTRY/snow-de:latest', true) }}"
 
   vars_files:
     - vars.yml

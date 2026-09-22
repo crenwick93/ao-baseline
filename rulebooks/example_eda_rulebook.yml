@@ -4,8 +4,8 @@
 # Rule 1: Poll ServiceNow incidents and trigger an AO workflow.
 # Rule 2: Poll ServiceNow change requests and bridge CR approval to AO.
 #
-# Requires the ServiceNow DE (quay.io/crenwick93/snow-de:latest) for the
-# servicenow.itsm.records source plugin.
+# Requires a Decision Environment with servicenow.itsm for the
+# servicenow.itsm.records source plugin. See ansible_deployment/ee/decision-environment.yml.
 #
 # Customize:
 #   - sysparm_query filters for your incident/CR naming patterns

@@ -2,20 +2,15 @@
 
 ## What This Project Is
 
-A reusable starter template for AO (Automation Orchestrator) projects. Provides the common patterns extracted from `ao-ticket-enrichment` and `ao-cve-remediation-scalable`: EDA-to-AO bridge, ServiceNow ITSM playbooks, AO approval bridge, CaC structure, Terraform base, and project scaffolding.
+A reusable starter template for AO (Automation Orchestrator) projects. Provides the common patterns for AO automation: EDA-to-AO bridge, ServiceNow ITSM playbooks, AO approval bridge, CaC structure, Terraform base, and project scaffolding.
 
 When building a new AO project, clone this repo, customize the playbooks/workflow for your use case, and update CaC vars.
-
-## Related Projects
-
-- `../ao-ticket-enrichment/` — Simple enrichment + remediation (3-8 node workflows)
-- `../ao-cve-remediation-scalable/` — Complex fleet patching with parallel dev/prod paths, approval gates, dynamic job templates, SBOM diffing
 
 ## Key Technical Decisions
 
 ### Environment Variables
 - ServiceNow vars support both `SERVICENOW_*` and `SN_*` naming (`apply.yml` has fallback lookups)
-- `DEMO_HOST_IP` is the generic placeholder (replaces `MONITORING_HOST_IP` from ticket-enrichment)
+- `DEMO_HOST_IP` is the generic placeholder for the demo EC2 host IP
 - AO webhook credentials (`AO_WEBHOOK_PATH`, `AO_WEBHOOK_CLIENT_ID`, `AO_WEBHOOK_CLIENT_SECRET`) come from AO after publishing the workflow
 - AO API service account (`AO_SA_CLIENT_ID`, `AO_SA_CLIENT_SECRET`) are for the approval bridge — separate from webhook creds
 
