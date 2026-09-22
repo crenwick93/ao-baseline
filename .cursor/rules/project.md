@@ -6,6 +6,20 @@ A reusable starter template for AO (Automation Orchestrator) projects. Provides 
 
 When building a new AO project, clone this repo, customize the playbooks/workflow for your use case, and update CaC vars.
 
+## Capabilities — What This Template Can Do
+
+This template provides reusable playbooks for AO workflows. Action-based playbooks take an `action` variable; single-purpose playbooks do one thing:
+
+| Playbook | Job Template | Actions | What It Does |
+|---|---|---|---|
+| `trigger_ao_workflow.yml` | AO Workflow Bridge | n/a (single purpose) | EDA-to-AO bridge — triggers AO workflows from EDA |
+| `manage_snow_incident.yml` | Manage SNOW Incident | `create`, `update`, `resolve` | Full incident lifecycle in ServiceNow |
+| `manage_snow_change_request.yml` | Manage SNOW Change Request | `create`, `authorize`, `update`, `review`, `close` | Full CR lifecycle in ServiceNow |
+| `bridge_ao_approval.yml` | Bridge AO Approval | n/a (single purpose) | Bridges SNOW CR approval to AO approval gate |
+| `manage_git_repo.yml` | Manage Git Repo | `commit_file`, `create_pr` | Commit files and raise PRs via GitHub API |
+
+All action-based playbooks follow the same pattern: pass `action` + parameters as extra_vars.
+
 ## Key Technical Decisions
 
 ### Environment Variables
@@ -46,8 +60,18 @@ When building a new AO project, clone this repo, customize the playbooks/workflo
 ### Action-Based Playbook Pattern
 - `manage_snow_incident.yml` — `action: create|update|resolve`
 - `manage_snow_change_request.yml` — `action: create|authorize|update|review|close`
+- `manage_git_repo.yml` — `action: commit_file|create_pr`
 - AO workflow nodes call the same job template with different `action` values in extra_vars
-- The `create` actions publish identifiers via `set_stats` — subsequent nodes reference them as `${node.artifacts.field}`
+- The `create`/`commit_file`/`create_pr` actions publish identifiers via `set_stats` — subsequent nodes reference them as `${node.artifacts.field}`
+
+### GitHub Integration
+- Uses GitHub REST API (Contents API for commits, Pulls API for PRs)
+- `GITHUB_TOKEN` is injected as env var by the "GitHub API Token" credential type
+- `GITHUB_REPO` is set in `.env` and read by playbooks via `lookup('env', ...)`
+- `commit_file` action: creates or updates a file, supports branching (auto-creates branch if needed)
+- `create_pr` action: opens a PR from `head_branch` to `base_branch` (default: main)
+- Publishes `commit_sha`/`file_url` or `pr_number`/`pr_url` via `set_stats`
+- File content is base64-encoded automatically — pass raw content in `file_content`
 
 ### Infrastructure
 - Terraform provisions EC2 + VPC + Elastic IP in eu-west-1
@@ -63,7 +87,9 @@ When building a new AO project, clone this repo, customize the playbooks/workflo
 ## Scripts
 - `./dependencies/build-images.sh` — builds DE + EE container images
 - `./setup/scripts/setup-apply.sh` — configures demo host
+- `./setup/scripts/teardown.sh` — destroys Terraform infrastructure
 - `./ansible_deployment/scripts/cac-apply.sh` — applies all AAP/EDA objects
+- `./scripts/test-trigger.sh` — fires a test event to verify the EDA-to-AO pipeline
 - `./scripts/test-ao-approval-api.py` — debug tool for AO approval API
 
 ## Deployment Order
@@ -71,6 +97,6 @@ When building a new AO project, clone this repo, customize the playbooks/workflo
 2. `terraform apply` (provisions EC2)
 3. `setup-apply.sh` (installs application on demo host)
 4. `cac-apply.sh` (creates AAP objects — needs project synced first)
-4. Import AO workflow in AO UI, configure agentic nodes, publish
-5. Update `.env` with AO webhook creds, re-run `cac-apply.sh`
-6. Restart EDA activation in AAP UI
+5. Import AO workflow in AO UI, configure agentic nodes, publish
+6. Update `.env` with AO webhook creds, re-run `cac-apply.sh`
+7. Restart EDA activation in AAP UI

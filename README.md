@@ -7,6 +7,7 @@ Reusable starter template for **Automation Orchestrator (AO)** projects. Provide
 - **AO Approval Bridge** — programmatically bridges ServiceNow CR approvals to AO approval gates
 - **Configuration as Code** — full AAP Controller + EDA object definitions
 - **Terraform** — EC2 + VPC + Elastic IP for demo hosts
+- **GitHub integration** — commit files and raise PRs from AO workflows
 - **Example AO workflow JSON** — shows all four node types (aap_job_template, agentic, switch, approval)
 
 ## Quick Start
@@ -73,10 +74,12 @@ ao-baseline/
 │   ├── trigger_ao_workflow.yml     # EDA-to-AO bridge (OAuth2) — reuse as-is
 │   ├── manage_snow_incident.yml    # All incident ops: action=create|update|resolve
 │   ├── manage_snow_change_request.yml  # All CR ops: action=create|authorize|update|review|close
-│   └── bridge_ao_approval.yml     # Bridge SNOW CR approval to AO approval gate
+│   ├── bridge_ao_approval.yml     # Bridge SNOW CR approval to AO approval gate
+│   └── manage_git_repo.yml        # Git ops: action=commit_file|create_pr
 ├── rulebooks/
 │   └── example_eda_rulebook.yml   # Two rules: incident poll + CR approval bridge
 ├── scripts/
+│   ├── test-trigger.sh            # Fire a test event to verify the pipeline
 │   └── test-ao-approval-api.py    # Debug tool for AO approval API
 ├── ansible_deployment/
 │   ├── cac/
@@ -97,7 +100,8 @@ ao-baseline/
 │   ├── playbooks/
 │   │   └── setup_demo_host.yml    # Demo host provisioning stub
 │   └── scripts/
-│       └── setup-apply.sh         # Setup runner script
+│       ├── setup-apply.sh         # Setup runner script
+│       └── teardown.sh            # Destroy Terraform infrastructure
 └── .cursor/
     └── rules/
         └── project.md             # AI assistant conventions
@@ -134,21 +138,33 @@ Two rules in one activation:
 1. Poll SNOW incidents → trigger AO workflow
 2. Poll SNOW change requests → bridge approvals to AO
 
-### 5. CaC Credential Types
+### 5. GitHub Integration (`manage_git_repo.yml`)
 
-Three custom credential types covering all AO integration points:
+Commit files and raise PRs via the GitHub API. Useful for dynamic content generation (e.g. Lightspeed remediation playbooks, config changes) and change governance.
+
+```json
+{ "action": "commit_file", "file_path": "playbooks/fix.yml", "file_content": "...", "commit_message": "Add fix" }
+{ "action": "commit_file", "file_path": "playbooks/fix.yml", "file_content": "...", "branch": "feature/fix" }
+{ "action": "create_pr", "pr_title": "Add fix playbook", "head_branch": "feature/fix" }
+```
+
+### 6. CaC Credential Types
+
+Four custom credential types covering all AO integration points:
 - **ServiceNow** — env vars (`SN_HOST`, `SN_USERNAME`, `SN_PASSWORD`)
 - **AO Webhook** — extra_vars (`webhook_base_url`, `webhook_client_id`, `webhook_client_secret`)
 - **AO API** — extra_vars (`ao_sa_client_id`, `ao_sa_client_secret`, `ao_base_url`)
+- **GitHub API Token** — env var (`GITHUB_TOKEN`)
 
 ## Deployment Order
 
-1. `terraform apply` — provisions EC2
-2. `setup-apply.sh` — configures demo host
-3. `cac-apply.sh` — creates AAP objects (needs project synced first)
-4. Import AO workflow in AO UI, configure agentic nodes, publish
-5. Update `.env` with AO webhook creds, re-run `cac-apply.sh`
-6. Restart EDA activation in AAP UI
+1. Build DE + EE images (`./dependencies/build-images.sh --push`)
+2. `terraform apply` — provisions EC2
+3. `setup-apply.sh` — configures demo host
+4. `cac-apply.sh` — creates AAP objects (needs project synced first)
+5. Import AO workflow in AO UI, configure agentic nodes, publish
+6. Update `.env` with AO webhook creds, re-run `cac-apply.sh`
+7. Restart EDA activation in AAP UI
 
 ## Reference Projects
 

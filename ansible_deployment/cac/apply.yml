@@ -40,9 +40,10 @@
     demo_ssh_key: "{{ lookup('file', demo_ssh_key_path, errors='ignore') | default(omit, true) }}"
     demo_ssh_key_path: "{{ lookup('env', 'DEMO_SSH_KEY_PATH') | default(playbook_dir + '/../../setup/terraform/demo-key.pem', true) }}"
 
-    # GitHub project (for AAP project SCM URL)
+    # GitHub (for AAP project SCM URL + Git operations credential)
     github_repo: "{{ lookup('env', 'GITHUB_REPO') | default('YOUR_ORG/ao-baseline', true) }}"
     git_repo_url: "{{ 'https://github.com/' ~ github_repo ~ '.git' }}"
+    github_token: "{{ lookup('env', 'GITHUB_TOKEN') | default('placeholder', true) }}"
 
     # EDA custom Decision Environment image
     de_image: "{{ lookup('env', 'DE_IMAGE') | default('YOUR_REGISTRY/snow-de:latest', true) }}"

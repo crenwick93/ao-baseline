@@ -22,6 +22,14 @@
             "incident_description": {
               "type": "string",
               "description": "Incident short description + description"
+            },
+            "incident_urgency": {
+              "type": "string",
+              "description": "Incident urgency (1=High, 2=Medium, 3=Low)"
+            },
+            "incident_impact": {
+              "type": "string",
+              "description": "Incident impact (1=High, 2=Medium, 3=Low)"
             }
           }
         }
