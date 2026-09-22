@@ -1,6 +1,8 @@
 # AO Baseline Template
 
-Reusable starter template for **Automation Orchestrator (AO)** projects. Provides all the common patterns extracted from real-world AO demos:
+This is a baseline, not a finished project. Clone it, open it in Cursor, and tell Cursor what you want the project to become — a ticket enrichment workflow, certificate rotation, CVE remediation, or something else. Cursor will adapt the workflow, rulebooks, and CaC to that use case. Do that before you provision infrastructure or apply CaC. The steps below deploy whatever the project has become.
+
+It includes the patterns most AO projects need:
 
 - **EDA-to-AO bridge** — the universal pattern for triggering AO workflows from Event-Driven Ansible
 - **ServiceNow ITSM playbooks** — action-based incident and change request management
