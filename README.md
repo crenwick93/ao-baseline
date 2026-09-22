@@ -12,52 +12,72 @@ Reusable starter template for **Automation Orchestrator (AO)** projects. Provide
 
 ## Quick Start
 
-### 1. Clone and configure
+### 1. Clone and tell Cursor what you want to build
 
 ```bash
-git clone https://github.com/YOUR_ORG/ao-baseline.git my-ao-project
+git clone https://github.com/crenwick93/ao-baseline.git my-ao-project
 cd my-ao-project
 cp .env.example .env
-# Edit .env with your AAP, ServiceNow, and AO credentials
 ```
 
-### 2. Provision infrastructure (optional)
+Open the project in Cursor and describe the use case. For example: "Build a certificate rotation workflow that opens a ServiceNow change request, waits for approval, then commits the new cert to GitHub."
+
+Cursor uses `.cursor/rules/project.md` and the playbooks in this repo to reshape the template for that use case: the AO workflow JSON, the EDA rulebook filters, CaC job template names, and any new playbooks. Do this before provisioning anything — the infra and CaC steps deploy whatever the project has become.
+
+Fill in `.env` with your AAP, ServiceNow, GitHub, and (once the workflow is published) AO credentials.
+
+### 2. Build container images (if you need a custom DE or EE)
+
+```bash
+REGISTRY=quay.io/myorg ./dependencies/build-images.sh --push
+```
+
+Set `DE_IMAGE` in `.env` to the image you pushed.
+
+### 3. Provision infrastructure (optional)
 
 ```bash
 cd setup/terraform
 terraform init && terraform apply
 cd ../..
 
-# Configure the demo host
 ./setup/scripts/setup-apply.sh
 ```
 
-### 3. Install collections and apply CaC
+### 4. Install collections and apply CaC
 
 ```bash
 ansible-galaxy collection install -r ansible_deployment/cac/requirements.yml
 ./ansible_deployment/scripts/cac-apply.sh
 ```
 
-### 4. Import AO workflow
+The controller project must be synced in AAP before job templates that reference its playbooks can be created. If the first CaC run fails on templates, sync the project in the AAP UI and run CaC again.
 
-1. In the AO UI, import `ao/example-workflow.json`
+### 5. Import and publish the AO workflow
+
+1. In the AO UI, import the workflow JSON from `ao/`
 2. Configure any agentic nodes (model, MCP servers)
 3. Publish the workflow
-4. Copy the EDA trigger credentials to `.env`:
+4. Copy the EDA trigger credentials into `.env`:
    - `AO_WEBHOOK_PATH`
    - `AO_WEBHOOK_CLIENT_ID`
    - `AO_WEBHOOK_CLIENT_SECRET`
 
-### 5. Re-run CaC with real credentials
+### 6. Re-run CaC with real credentials
 
 ```bash
 ./ansible_deployment/scripts/cac-apply.sh
 ```
 
-### 6. Enable EDA activation
+### 7. Enable the EDA activation
 
-In AAP → EDA → Activations, restart the rulebook activation to pick up the updated webhook credentials.
+In AAP → EDA → Activations, restart the rulebook activation so it picks up the webhook credentials.
+
+### 8. Test the pipeline
+
+```bash
+./scripts/test-trigger.sh
+```
 
 ## Project Structure
 
@@ -158,6 +178,8 @@ Four custom credential types covering all AO integration points:
 
 ## Deployment Order
 
+Describe the use case to Cursor first so the project is customized before anything is deployed.
+
 1. Build DE + EE images (`./dependencies/build-images.sh --push`)
 2. `terraform apply` — provisions EC2
 3. `setup-apply.sh` — configures demo host
@@ -165,6 +187,7 @@ Four custom credential types covering all AO integration points:
 5. Import AO workflow in AO UI, configure agentic nodes, publish
 6. Update `.env` with AO webhook creds, re-run `cac-apply.sh`
 7. Restart EDA activation in AAP UI
+8. `./scripts/test-trigger.sh` — verify the pipeline
 
 ## Reference Projects
 

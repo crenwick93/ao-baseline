@@ -4,7 +4,7 @@
 
 A reusable starter template for AO (Automation Orchestrator) projects. Provides the common patterns for AO automation: EDA-to-AO bridge, ServiceNow ITSM playbooks, AO approval bridge, CaC structure, Terraform base, and project scaffolding.
 
-When building a new AO project, clone this repo, customize the playbooks/workflow for your use case, and update CaC vars.
+When someone opens this template to start a new project, the first step is for them to describe the use case. Adapt the AO workflow JSON, EDA rulebook filters, CaC names, and playbooks to that use case before any infrastructure or CaC is applied. Do not tell them to provision EC2 or run CaC until the project matches what they asked for.
 
 ## Capabilities — What This Template Can Do
 
@@ -93,6 +93,9 @@ All action-based playbooks follow the same pattern: pass `action` + parameters a
 - `./scripts/test-ao-approval-api.py` — debug tool for AO approval API
 
 ## Deployment Order
+
+Customize the project for the use case first. Then:
+
 1. Build DE + EE images (`./dependencies/build-images.sh --push`)
 2. `terraform apply` (provisions EC2)
 3. `setup-apply.sh` (installs application on demo host)
@@ -100,3 +103,4 @@ All action-based playbooks follow the same pattern: pass `action` + parameters a
 5. Import AO workflow in AO UI, configure agentic nodes, publish
 6. Update `.env` with AO webhook creds, re-run `cac-apply.sh`
 7. Restart EDA activation in AAP UI
+8. `./scripts/test-trigger.sh` (verify the pipeline)
