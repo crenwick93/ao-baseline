@@ -1,4 +1,15 @@
 ---
+# Decision Environment for EDA rulebook activations.
+#
+# Includes servicenow.itsm (for the records source plugin that polls SNOW)
+# and ansible.eda (for filters like json_filter and normalize_keys).
+#
+# Build with:
+#   ansible-builder build -f dependencies/de/decision-environment.yml -t your-registry/snow-de:latest
+#
+# Push with:
+#   podman push your-registry/snow-de:latest
+
 version: 3
 
 dependencies:

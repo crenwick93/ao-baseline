@@ -83,10 +83,15 @@ ao-baseline/
 │   │   ├── apply.yml              # CaC playbook (AAP Controller + EDA)
 │   │   ├── vars.yml               # All AAP/EDA object definitions
 │   │   └── requirements.yml       # Collection dependencies
-│   ├── ee/
-│   │   └── decision-environment.yml  # DE build definition
 │   └── scripts/
 │       └── cac-apply.sh           # CaC runner script
+├── dependencies/
+│   ├── de/
+│   │   └── decision-environment.yml  # DE build definition (EDA)
+│   ├── ee/
+│   │   └── execution-environment.yml # EE build definition (AAP jobs)
+│   ├── build-images.sh              # Build + push both images
+│   └── README.md                    # Build instructions
 ├── setup/
 │   ├── terraform/                 # EC2 + VPC + Elastic IP
 │   ├── playbooks/

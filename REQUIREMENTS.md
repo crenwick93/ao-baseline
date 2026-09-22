@@ -28,8 +28,8 @@ ansible-galaxy collection install -r ansible_deployment/cac/requirements.yml
 
 The EDA rulebook uses the `servicenow.itsm.records` source plugin, which requires a custom Decision Environment:
 
-- Image: Build from `ansible_deployment/ee/decision-environment.yml` or provide your own
-- Build definition: `ansible_deployment/ee/decision-environment.yml`
+- Image: Build from `dependencies/de/decision-environment.yml` or provide your own
+- Build script: `./dependencies/build-images.sh`
 
 ## Credentials Required
 
