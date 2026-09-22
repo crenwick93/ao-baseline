@@ -6,9 +6,11 @@ A reusable starter template for AO (Automation Orchestrator) projects. It is a b
 
 ## Starting a New Project
 
+The user should create their own empty GitHub repo and point `origin` at it (`git remote set-url origin`) before any commits. If `origin` still points at `crenwick93/ao-baseline`, stop and tell them to retarget it. Do not push to the template repo.
+
 When the user describes a use case, turn this baseline into that project before suggesting any deploy steps.
 
-1. Adapt the AO workflow JSON, EDA rulebook, CaC names, and playbooks to the use case. Keep the reusable playbooks (`trigger_ao_workflow.yml`, `manage_snow_incident.yml`, `manage_snow_change_request.yml`, `bridge_ao_approval.yml`, `manage_git_repo.yml`) and call them with the right `action` and extra_vars.
+1. Adapt the AO workflow JSON, EDA rulebook, CaC names, and playbooks to the use case. Keep the reusable playbooks (`trigger_ao_workflow.yml`, `manage_snow_incident.yml`, `manage_snow_change_request.yml`, `bridge_ao_approval.yml`, `manage_git_repo.yml`) and call them with the right `action` and extra_vars. Set `GITHUB_REPO` in `.env` to the user's repo (`org/name`) so CaC and `manage_git_repo.yml` target it.
 2. Rewrite `README.md` so it describes the new project and how to deploy it. Remove the "this is a baseline" framing.
 3. Rewrite this file so it describes the new project. Replace "What This Project Is" and "Starting a New Project" with the use case. Keep the technical gotchas below, updated for anything the new project changes.
 4. Do not tell the user to provision EC2 or run CaC until the project matches what they asked for.
