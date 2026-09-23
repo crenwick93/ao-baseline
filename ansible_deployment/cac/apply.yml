@@ -37,8 +37,13 @@
     ao_base_url: "{{ lookup('env', 'AO_WEBHOOK_BASE_URL') | default(omit, true) }}"
 
     # Demo host SSH key (EC2 instance provisioned by Terraform)
-    demo_ssh_key: "{{ lookup('file', demo_ssh_key_path, errors='ignore') | default(omit, true) }}"
-    demo_ssh_key_path: "{{ lookup('env', 'DEMO_SSH_KEY_PATH') | default(playbook_dir + '/../../setup/terraform/demo-key.pem', true) }}"
+    # IMPORTANT: Use absolute path via realpath — relative paths fail from CaC.
+    # The errors='ignore' pattern silently creates credentials with no key.
+    _repo_root: "{{ (playbook_dir + '/../..') | realpath }}"
+    _default_key_path: "{{ _repo_root }}/setup/terraform/demo-key.pem"
+    _env_key_path: "{{ lookup('env', 'DEMO_SSH_KEY_PATH') }}"
+    demo_ssh_key_path: "{{ (_repo_root + '/' + _env_key_path) if _env_key_path and not _env_key_path.startswith('/') else (_env_key_path if _env_key_path else _default_key_path) }}"
+    demo_ssh_key: "{{ lookup('file', demo_ssh_key_path) }}"
 
     # GitHub (for AAP project SCM URL + Git operations credential)
     github_repo: "{{ lookup('env', 'GITHUB_REPO') | default('YOUR_ORG/ao-baseline', true) }}"

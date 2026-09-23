@@ -1,5 +1,12 @@
 # AO Baseline Template — Project Rules
 
+## Security Rules
+
+- **NEVER read `.env`** — it contains secrets (passwords, tokens, API keys). It is in `.gitignore` and must not be accessed by Cursor, even to check which keys are populated or to mask values.
+- **NEVER read `*.pem` files** — private keys.
+- **NEVER read `terraform.tfstate`** — contains infrastructure secrets.
+- If you need to verify a `.env` value is set, ask the user — do not read the file.
+
 ## What This Project Is
 
 A reusable starter template for AO (Automation Orchestrator) projects. It is a baseline, not a finished use case.
@@ -53,18 +60,56 @@ All action-based playbooks follow the same pattern: pass `action` + parameters a
 - Approval nodes use `from_port: "approved"` on outgoing edges
 
 ### EDA Gotchas
-- EDA activations must NOT have event streams attached if using `servicenow.itsm.records` source from the rulebook
+- **Split rulebooks by source type**: webhook sources (need event streams) and polling sources (`servicenow.itsm.records`) CANNOT share an activation. Event streams override the rulebook source. Use two separate activations.
+- **Event stream CaC pattern** (for receiving external webhooks):
+  1. Create a `Token Event Stream` credential with `auth_type: token`, `token`, `http_header_key: Authorization`
+  2. Create the event stream with `credential_name` + `event_stream_type: token`
+  3. On the activation, use `source_mappings` (NOT `event_streams`):
+     ```yaml
+     source_mappings:
+       - source_name: my_source        # must match name: in rulebook source
+         event_stream_name: "My Events"
+     ```
+  4. The rulebook source MUST have a `name:` field for the mapping to reference:
+     ```yaml
+     sources:
+       - name: my_source
+         ansible.eda.webhook:
+           host: 0.0.0.0
+           port: 5000
+     ```
+- EDA activations must NOT have event streams attached if using `servicenow.itsm.records` source
 - The EDA controller credential needs host URL with `/api/controller/` path suffix (AAP 2.5+)
 - The `webhook_path` is passed from EDA activation extra_vars → rulebook → bridge job → AO trigger
-- EDA activation can't be updated by CaC while running — disable/re-enable in AAP UI
+- EDA activation can't be updated by CaC while running — disable in AAP UI first, then re-run CaC
 - CR approval bridge: `event.state == '-1'` is the Implement state in ServiceNow
 
 ### CaC Gotchas
 - CaC cannot overwrite encrypted credential fields that already exist — delete the credential first or edit in AAP UI
+- **SSH key path**: `lookup('file', relative_path, errors='ignore')` silently fails and creates credentials with no key. Use `(playbook_dir + '/../..') | realpath` to build absolute paths. See `apply.yml` for the correct pattern.
 - The controller project must be synced in AAP before CaC can create job templates referencing its playbooks
 - The EDA project must also be synced separately for rulebook activations
 - Two-pass CaC: first run creates objects with placeholder creds, second run (after AO publish) updates with real creds
 - Uses `set -a; source .env; set +a` pattern for loading env vars (not `export $(grep | xargs)`)
+
+### AWS Dynamic Inventory
+- Prefer AWS EC2 dynamic inventory over static hosts — see `inventory/aws_ec2.yml.example`
+- Tag instances consistently (e.g. `Name: ao-demo`) for discovery
+- Create an "Amazon Web Services" credential in AAP with `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+- The inventory source uses `source: scm` with `source_path` pointing to the inventory file in your project
+
+### Auto-Populating .env from Playbooks
+- Use `ansible.builtin.lineinfile` with `delegate_to: localhost` to write values back to `.env`:
+  ```yaml
+  - name: Write TOKEN back to .env
+    ansible.builtin.lineinfile:
+      path: "{{ playbook_dir }}/../../.env"
+      regexp: '^MY_TOKEN='
+      line: "MY_TOKEN={{ discovered_token }}"
+    delegate_to: localhost
+    become: false
+  ```
+- Terraform's `local-exec` provisioner can also write to `.env` (see `DEMO_HOST_IP` pattern in `main.tf`)
 
 ### Action-Based Playbook Pattern
 - `manage_snow_incident.yml` — `action: create|update|resolve`

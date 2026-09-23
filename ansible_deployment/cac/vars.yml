@@ -300,8 +300,43 @@ eda_credentials:
       SN_PASSWORD: "{{ sn_password }}"
 
 # -----------------------------------------------------------------------------
+# EDA Event Streams (for receiving external webhooks)
+# -----------------------------------------------------------------------------
+# Uncomment and configure if your use case receives external webhooks
+# (e.g. Splunk alerts, GitHub webhooks, monitoring tool alerts).
+# Requires a Token Event Stream credential (see eda_credentials above).
+#
+# eda_event_streams:
+#   - name: "External Webhook Events"
+#     organization: "Default"
+#     credential_name: "Webhook Events Token"
+#     event_stream_type: token
+#     test_mode: false
+
+# -----------------------------------------------------------------------------
 # Rulebook Activations
 # -----------------------------------------------------------------------------
+# PATTERN: If your use case has both webhook AND polling sources, you need
+# TWO separate activations — event streams override the rulebook source,
+# so a SNOW polling rulebook can't share an activation with a webhook listener.
+#
+# Activation 1 (webhook): Uses source_mappings to connect to an event stream
+# Activation 2 (polling): Uses servicenow.itsm.records directly, NO event stream
+#
+# Example webhook activation:
+# - name: "webhook-listener"
+#   project: "Your Project"
+#   rulebook: "webhook_listener.yml"
+#   decision_environment: "ServiceNow DE"
+#   enabled: true
+#   extra_vars:
+#     webhook_path: "{{ ao_webhook_path }}"
+#   source_mappings:
+#     - source_name: my_webhook_source    # must match 'name:' in the rulebook source
+#       event_stream_name: "External Webhook Events"
+#   eda_credentials:
+#     - "AAP Controller Token"
+
 eda_rulebook_activations:
   - name: "ao-baseline-events"
     description: "Monitor ServiceNow incidents and CR approvals for AO workflows"

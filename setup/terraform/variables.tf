@@ -5,7 +5,7 @@ variable "aws_region" {
 }
 
 variable "instance_type" {
-  description = "EC2 instance type"
+  description = "EC2 instance type. Use t3.medium or larger if running containers (Splunk, Vault, etc.) alongside the demo app — t3.small (2GB) is not enough."
   type        = string
   default     = "t3.small"
 }
