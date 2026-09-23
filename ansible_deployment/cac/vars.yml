@@ -311,6 +311,7 @@ eda_credentials:
 #     organization: "Default"
 #     credential_name: "Webhook Events Token"
 #     event_stream_type: token
+#     forward_events: true          # CRITICAL: defaults to false (disabled)!
 #     test_mode: false
 
 # -----------------------------------------------------------------------------

@@ -63,12 +63,12 @@ All action-based playbooks follow the same pattern: pass `action` + parameters a
 - **Split rulebooks by source type**: webhook sources (need event streams) and polling sources (`servicenow.itsm.records`) CANNOT share an activation. Event streams override the rulebook source. Use two separate activations.
 - **Event stream CaC pattern** (for receiving external webhooks):
   1. Create a `Token Event Stream` credential with `auth_type: token`, `token`, `http_header_key: Authorization`
-  2. Create the event stream with `credential_name` + `event_stream_type: token`
-  3. On the activation, use `source_mappings` (NOT `event_streams`):
+  2. Create the event stream with `credential_name` + `event_stream_type: token` + **`forward_events: true`** (defaults to false — without this the event stream is disabled and events are silently dropped!)
+  3. On the activation, use `event_streams` (NOT `source_mappings`):
      ```yaml
-     source_mappings:
-       - source_name: my_source        # must match name: in rulebook source
-         event_stream_name: "My Events"
+     event_streams:
+       - event_stream: "My Events"
+         source_name: my_source        # must match name: in rulebook source
      ```
   4. The rulebook source MUST have a `name:` field for the mapping to reference:
      ```yaml
